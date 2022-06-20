@@ -11,6 +11,13 @@
     padding-left: 30px;
 }
 
+.taskscontainer {
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+    gap: 20px;
+}
+
 .tasks {
     display: flex;
     align-items: center;
