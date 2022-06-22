@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { db } from "./Firebase.js";
+import { collection, getDocs } from "firebase/firestore";
 import "./SideNav.css";
 // import DateIcon from "../Images/dateicon.svg";
 // import CommonIcon from "../Images/commonicon.svg";
@@ -6,7 +8,79 @@ import { Link, useNavigate } from "react-router-dom";
 
 function SideNav() {
   let navigate = useNavigate();
+  var [today, setToday] = useState(0);
+  var [upcoming, setUpcoming] = useState(0);
+  var [overdue, setOverdue] = useState(0);
+  var [personal, setPersonal] = useState(0);
+  var [home, setHome] = useState(0);
+  var [office, setOffice] = useState(0);
   let path = window.location.pathname;
+  var today1;
+  today1 = new Date();
+  var dd = String(today1.getDate()).padStart(2, "0");
+  var mm = String(today1.getMonth() + 1).padStart(2, "0"); //January is 0!
+  var yyyy = today1.getFullYear();
+
+  today1 = dd + "/" + mm + "/" + yyyy;
+
+  const fun = async () => {
+    var tc = 0,
+      uc = 0,
+      oc = 0,
+      pc = 0,
+      hc = 0,
+      ofc = 0;
+    const querySnapshot = await getDocs(collection(db, "email"));
+    console.log(today);
+    // setFiles(Number(querySnapshot.docs.length) - 1);
+    querySnapshot.forEach((doc) => {
+      //   if (doc.data().name) {
+      //     setName(doc.data().name);
+      //   }
+      if (doc.data().taskDate != "") {
+        if (
+          convertToDate(doc.data().taskDate).getTime() ===
+          convertToDate(today1).getTime()
+        )
+          tc += 1;
+        console.log(today);
+
+        if (
+          convertToDate(doc.data().taskDate).getTime() >
+          convertToDate(today1).getTime()
+        )
+          uc += 1;
+
+        if (
+          convertToDate(doc.data().taskDate).getTime() <
+          convertToDate(today1).getTime()
+        )
+          oc += 1;
+      }
+      if (doc.data().tag === "personal") pc += 1;
+
+      if (doc.data().tag === "home") hc += 1;
+
+      if (doc.data().tag === "office") ofc += 1;
+    });
+    setToday(tc);
+    setUpcoming(uc);
+    setOverdue(oc);
+    setPersonal(pc);
+    setHome(hc);
+    setOffice(ofc);
+  };
+
+  useEffect(() => {
+    fun();
+    console.log("Hii");
+  }, []);
+
+  const convertToDate = (d) => {
+    const [day, month, year] = d.split("/");
+    return new Date(year, month - 1, day);
+  };
+
   const handleClick = (e) => {
     // navigate('/', { state: { day: e } })
     console.log(e.target.innerText);
@@ -56,9 +130,13 @@ function SideNav() {
                       d="M5.83331 12.5C5.83331 12.0398 6.20641 11.6667 6.66665 11.6667H8.33331C8.79355 11.6667 9.16665 12.0398 9.16665 12.5V14.1667C9.16665 14.6269 8.79355 15 8.33331 15H6.66665C6.20641 15 5.83331 14.6269 5.83331 14.1667V12.5Z"
                     />
                   </svg>
-                  <p className={path === "/" ? "linktextactive" : "linktext"}>Today</p>
+                  <p className={path === "/" ? "linktextactive" : "linktext"}>
+                    Today
+                  </p>
                 </div>
-                <div className={path === "/" ? "countactive" : "count"}>3/7</div>
+                <div className={path === "/" ? "countactive" : "count"}>
+                  {today}
+                </div>
               </div>
             </li>
           </Link>
@@ -108,9 +186,17 @@ function SideNav() {
                       d="M4.16665 14.1667C4.62688 14.1667 4.99998 14.5398 4.99998 15V15.0083C4.99998 15.4686 4.62688 15.8417 4.16665 15.8417C3.70641 15.8417 3.33331 15.4686 3.33331 15.0083V15C3.33331 14.5398 3.70641 14.1667 4.16665 14.1667Z"
                     />
                   </svg>
-                  <p className={path === "/tomorrow" ? "linktextactive" : "linktext"}>Tomorrow</p>
+                  <p
+                    className={
+                      path === "/tomorrow" ? "linktextactive" : "linktext"
+                    }
+                  >
+                    Upcoming
+                  </p>
                 </div>
-                <div className={path === "/tomorrow" ? "countactive" : "count"}>3/7</div>
+                <div className={path === "/tomorrow" ? "countactive" : "count"}>
+                  {upcoming}
+                </div>
               </div>
             </li>
           </Link>
@@ -160,15 +246,23 @@ function SideNav() {
                       d="M4.16665 14.1667C4.62688 14.1667 4.99998 14.5398 4.99998 15V15.0083C4.99998 15.4686 4.62688 15.8417 4.16665 15.8417C3.70641 15.8417 3.33331 15.4686 3.33331 15.0083V15C3.33331 14.5398 3.70641 14.1667 4.16665 14.1667Z"
                     />
                   </svg>
-                  <p className={path === "/overdue" ? "linktextactive" : "linktext"}>Overdue</p>
+                  <p
+                    className={
+                      path === "/overdue" ? "linktextactive" : "linktext"
+                    }
+                  >
+                    Overdue
+                  </p>
                 </div>
-                <div className={path === "/overdue" ? "countactive" : "count"}>3/7</div>
+                <div className={path === "/overdue" ? "countactive" : "count"}>
+                  {overdue}
+                </div>
               </div>
             </li>
           </Link>
         </ul>
       </div>
-      <hr width="70%" ></hr>
+      <hr width="70%"></hr>
       <div className="lower">
         <ul className="container">
           <Link to="/personal">
@@ -217,9 +311,17 @@ function SideNav() {
                       d="M4.16665 14.1667C4.62688 14.1667 4.99998 14.5398 4.99998 15V15.0083C4.99998 15.4686 4.62688 15.8417 4.16665 15.8417C3.70641 15.8417 3.33331 15.4686 3.33331 15.0083V15C3.33331 14.5398 3.70641 14.1667 4.16665 14.1667Z"
                     />
                   </svg>
-                  <p className={path === "/personal" ? "linktextactive" : "linktext"}>Personal</p>
+                  <p
+                    className={
+                      path === "/personal" ? "linktextactive" : "linktext"
+                    }
+                  >
+                    Personal
+                  </p>
                 </div>
-                <div className={path === "/personal" ? "countactive" : "count"}>3/7</div>
+                <div className={path === "/personal" ? "countactive" : "count"}>
+                  {personal}
+                </div>
               </div>
             </li>
           </Link>
@@ -269,9 +371,15 @@ function SideNav() {
                       d="M4.16665 14.1667C4.62688 14.1667 4.99998 14.5398 4.99998 15V15.0083C4.99998 15.4686 4.62688 15.8417 4.16665 15.8417C3.70641 15.8417 3.33331 15.4686 3.33331 15.0083V15C3.33331 14.5398 3.70641 14.1667 4.16665 14.1667Z"
                     />
                   </svg>
-                  <p className={path === "/home" ? "linktextactive" : "linktext"}>Home</p>
+                  <p
+                    className={path === "/home" ? "linktextactive" : "linktext"}
+                  >
+                    Home
+                  </p>
                 </div>
-                <div className={path === "/home" ? "countactive" : "count"}>3/7</div>
+                <div className={path === "/home" ? "countactive" : "count"}>
+                  {home}
+                </div>
               </div>
             </li>
           </Link>
@@ -321,9 +429,17 @@ function SideNav() {
                       d="M4.16665 14.1667C4.62688 14.1667 4.99998 14.5398 4.99998 15V15.0083C4.99998 15.4686 4.62688 15.8417 4.16665 15.8417C3.70641 15.8417 3.33331 15.4686 3.33331 15.0083V15C3.33331 14.5398 3.70641 14.1667 4.16665 14.1667Z"
                     />
                   </svg>
-                  <p className={path === "/office" ? "linktextactive" : "linktext"}>Office</p>
+                  <p
+                    className={
+                      path === "/office" ? "linktextactive" : "linktext"
+                    }
+                  >
+                    Office
+                  </p>
                 </div>
-                <div className={path === "/office" ? "countactive" : "count"}>3/7</div>
+                <div className={path === "/office" ? "countactive" : "count"}>
+                  {office}
+                </div>
               </div>
             </li>
           </Link>

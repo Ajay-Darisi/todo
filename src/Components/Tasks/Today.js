@@ -6,6 +6,7 @@ import { collection, getDocs } from "firebase/firestore";
 
 function Today() {
   const [day, setDay] = useState("Today");
+  const [count, setCount] = useState();
   var [data, setData] = useState([]);
   var today;
   today = new Date();
@@ -23,11 +24,15 @@ function Today() {
       //   if (doc.data().name) {
       //     setName(doc.data().name);
       //   }
-      data1.push(doc.data());
+      if (
+        convertToDate(doc.data().taskDate).getTime() ===
+          convertToDate(today).getTime() ||
+        doc.data().taskDate === ""
+      )
+        data1.push(doc.data());
     });
+    setCount(data1.length);
     setData(data1);
-    console.log(today);
-    console.log(data1);
   };
 
   const checkday = (task) => {
@@ -53,7 +58,7 @@ function Today() {
         <h1 className="heading" onClick={fun}>
           Today
         </h1>
-        <div className="tasks">
+        {/* <div className="tasks">
           <div className="check">
             <input type="checkbox" className="checkbox" />
           </div>
@@ -63,10 +68,10 @@ function Today() {
               {day}
             </div>
           </div>
-        </div>
+        </div> */}
         <div className="taskscontainer">
           {data.map((task) => (
-            <div className="tasks">
+            <div className="tasks" key={task.taskName}>
               <div className="check">
                 <input type="checkbox" className="checkbox" />
               </div>
@@ -84,6 +89,11 @@ function Today() {
               </div>
             </div>
           ))}
+          {data.length === 0 ? (
+            <div className="summary">No Tasks Today</div>
+          ) : (
+            <></>
+          )}
         </div>
       </div>
     </div>

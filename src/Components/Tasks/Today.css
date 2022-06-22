@@ -18,6 +18,10 @@
     gap: 20px;
 }
 
+.personaltasks {
+    display: flex;
+}
+
 .tasks {
     display: flex;
     align-items: center;

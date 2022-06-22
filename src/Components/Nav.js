@@ -60,6 +60,7 @@ function Nav() {
       // setTag("Personal");
     }
     setIsOpen(false);
+    window.location.reload();
   };
 
   return (
